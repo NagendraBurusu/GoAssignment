@@ -1,0 +1,30 @@
+package database
+
+import (
+	"fmt"
+	"os"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
+)
+
+type Database struct {
+	Client *sqlx.DB
+}
+
+// NewDatabase - returns a pointer to a database object
+func NewDatabase() (*Database, error) {
+	log.Info("Setting up new database connection")
+
+	connectionString := os.Getenv("DB_URL")
+
+	db, err := sqlx.Connect("mysql", connectionString)
+	if err != nil {
+		return &Database{}, fmt.Errorf("could not connect to database: %w", err)
+	}
+	log.Info("Database connecttion made sucessfully")
+	return &Database{
+		Client: db,
+	}, nil
+}
