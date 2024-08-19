@@ -3,6 +3,8 @@ package main
 import (
 	"GoAssignment/internal/database"
 	"GoAssignment/internal/initilizers"
+	"GoAssignment/internal/student"
+	transportHTTP "GoAssignment/internal/transport"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,9 +16,16 @@ func init() {
 func Run() error {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.Info("Setting up Our App")
-	_, err := database.NewDatabase()
+	db, err := database.NewDatabase()
+
 	if err != nil {
 		log.Fatalf("Could not initialize database: %v", err)
+	}
+	stdentService := student.NewService(db)
+	handler := transportHTTP.NewHandler(stdentService)
+	if err := handler.Serve(); err != nil {
+		log.Error("failed to gracefully serve our application")
+		return err
 	}
 	return nil
 }
