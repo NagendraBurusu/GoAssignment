@@ -28,6 +28,13 @@ func NewHandler(service StudentService) *Handler {
 		Service: service,
 	}
 	h.Router = mux.NewRouter()
+	// Sets up our middleware functions
+	h.Router.Use(JSONMiddleware)
+	// we also want to log every incoming request
+	h.Router.Use(LoggingMiddleware)
+	// We want to timeout all requests that take longer than 15 seconds
+	h.Router.Use(TimeoutMiddleware)
+	// set up the routes
 	h.mapRoutes()
 
 	h.Server = &http.Server{
@@ -40,13 +47,14 @@ func NewHandler(service StudentService) *Handler {
 	return h
 }
 func (h *Handler) mapRoutes() {
+	h.Router.HandleFunc("/authentication", h.Authenticate).Methods("GET")
 	h.Router.HandleFunc("/alive", h.AliveCheck).Methods("GET")
 	h.Router.HandleFunc("/ready", h.ReadyCheck).Methods("GET")
-	h.Router.HandleFunc("/api/v1/student", h.CreateStudent).Methods("POST")
+	h.Router.HandleFunc("/api/v1/student", JWTAuth(h.CreateStudent)).Methods("POST")
 	h.Router.HandleFunc("/api/v1/student/{id}", h.GetStudent).Methods("GET")
 	h.Router.HandleFunc("/api/v1/student/{id}", h.DeleteStudent).Methods("DELETE")
-	h.Router.HandleFunc("/api/v1/student/{id}", h.UpdateStudent).Methods("PUT")
-	h.Router.HandleFunc("/api/v1/students", h.GetStudents).Methods("GET")
+	h.Router.HandleFunc("/api/v1/student/{id}", JWTAuth(h.UpdateStudent)).Methods("PUT")
+	h.Router.HandleFunc("/api/v1/students", JWTAuth(h.GetStudents)).Methods("GET")
 
 }
 

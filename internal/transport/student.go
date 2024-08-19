@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"GoAssignment/internal/authentication"
 	"GoAssignment/internal/student"
 	"context"
 	"encoding/json"
@@ -44,7 +45,6 @@ func studetFromPostStudentRequest(u PostStudentRequest) student.Student {
 		DateOfBirth: u.DateOfBirth,
 		Address:     u.Address,
 		Gender:      u.Gender,
-		CreatedBy:   u.CreatedBy,
 		CreatedOn:   u.CreatedOn,
 		UpdatedBy:   u.UpdatedBy,
 		UpdatedOn:   u.UpdatedOn,
@@ -52,7 +52,6 @@ func studetFromPostStudentRequest(u PostStudentRequest) student.Student {
 }
 func (h *Handler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 	var postStdReq PostStudentRequest
-
 	if err := json.NewDecoder(r.Body).Decode(&postStdReq); err != nil {
 		return
 	}
@@ -173,9 +172,7 @@ func studentFromUpdateStudentRequest(u UpdateStudentRequest) student.Student {
 		DateOfBirth: u.DateOfBirth,
 		Address:     u.Address,
 		Gender:      u.Gender,
-		CreatedBy:   u.CreatedBy,
 		CreatedOn:   u.CreatedOn,
-		UpdatedBy:   u.UpdatedBy,
 		UpdatedOn:   u.UpdatedOn,
 	}
 }
@@ -208,4 +205,24 @@ func (h *Handler) UpdateStudent(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(std); err != nil {
 		panic(err)
 	}
+}
+
+func (h *Handler) Authenticate(w http.ResponseWriter, r *http.Request) {
+	userID := r.Header.Get("User-ID")
+	password := r.Header.Get("Password")
+
+	if userID == "" || password == "" {
+		http.Error(w, "Missing credentials", http.StatusBadRequest)
+		return
+	}
+
+	token, err := authentication.GenerateJWT(userID)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }

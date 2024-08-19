@@ -1,11 +1,14 @@
 package database
 
 import (
+	"GoAssignment/internal/contextkey"
 	"GoAssignment/internal/student"
 	"context"
 	"database/sql"
 	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -42,7 +45,13 @@ func convertStudentRowToStudent(s StudentRow) student.Student {
 }
 
 func (d *Database) CreateStudent(ctx context.Context, std student.Student) (student.Student, error) {
+	createdby, ok := ctx.Value(contextkey.UserIDKey).(string)
+	log.Info(createdby)
+	if !ok {
+		return student.Student{}, fmt.Errorf("could not retrieve user ID from context")
+	}
 	std.ID = uuid.NewV4().String()
+	std.CreatedBy = createdby
 	dateOfBirthNullTime := sql.NullTime{Time: std.DateOfBirth.Time, Valid: !std.DateOfBirth.IsZero()}
 	postRow := StudentRow{
 		ID:          std.ID,
@@ -140,6 +149,11 @@ func (d *Database) DeleteStudent(ctx context.Context, id string) error {
 
 // UpdateStudent - updates a student in the database
 func (d *Database) UpdateStudent(ctx context.Context, id string, std student.Student) (student.Student, error) {
+	updatedby, ok := ctx.Value(contextkey.UserIDKey).(string)
+	std.UpdatedBy = updatedby
+	if !ok {
+		return student.Student{}, fmt.Errorf("could not retrieve user ID from context")
+	}
 	dateOfBirthNullTime := sql.NullTime{Time: std.DateOfBirth.Time, Valid: !std.DateOfBirth.IsZero()}
 	stdRow := StudentRow{
 		ID:          id,
