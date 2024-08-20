@@ -51,8 +51,8 @@ func (h *Handler) mapRoutes() {
 	h.Router.HandleFunc("/alive", h.AliveCheck).Methods("GET")
 	h.Router.HandleFunc("/ready", h.ReadyCheck).Methods("GET")
 	h.Router.HandleFunc("/api/v1/student", JWTAuth(h.CreateStudent)).Methods("POST")
-	h.Router.HandleFunc("/api/v1/student/{id}", h.GetStudent).Methods("GET")
-	h.Router.HandleFunc("/api/v1/student/{id}", h.DeleteStudent).Methods("DELETE")
+	h.Router.HandleFunc("/api/v1/student/{id}", JWTAuth(h.GetStudent)).Methods("GET")
+	h.Router.HandleFunc("/api/v1/student/{id}", JWTAuth(h.DeleteStudent)).Methods("DELETE")
 	h.Router.HandleFunc("/api/v1/student/{id}", JWTAuth(h.UpdateStudent)).Methods("PUT")
 	h.Router.HandleFunc("/api/v1/students", JWTAuth(h.GetStudents)).Methods("GET")
 

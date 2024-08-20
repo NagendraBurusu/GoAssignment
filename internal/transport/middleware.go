@@ -39,9 +39,6 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// Key for context key
-const contextKey = "createdby"
-
 // JWTAuth - a handy middleware function that will provide basic auth around specific endpoints
 func JWTAuth(original func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

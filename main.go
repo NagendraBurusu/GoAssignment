@@ -11,6 +11,7 @@ import (
 
 func init() {
 	initilizers.LoadEnvVariables()
+	initilizers.GetLogs()
 }
 
 func Run() error {
